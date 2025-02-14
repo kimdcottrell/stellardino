@@ -1,0 +1,62 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: images/app.Dockerfile
+      args:
+        - LOCAL_MACHINE_GID=${LOCAL_MACHINE_GID}
+    env_file:
+      - .env      
+    volumes:
+      - .:/app
+    labels:
+      # Explicitly tell Traefik to expose this container
+      - traefik.enable=true
+      # Tell Traefik you are planning a redirection, and to include the needed middleware
+      - traefik.http.middlewares.chatlocaldev-redirect-web-secure.redirectscheme.scheme=https
+      - traefik.http.routers.chatlocaldev.middlewares=chatlocaldev-redirect-web-secure
+      # The domain the service will respond to, and what is in your /etc/hosts
+      - traefik.http.routers.chatlocaldev-web.rule=Host(`chat.local.dev`)
+      # Allow request only from the predefined entry point named "web"
+      - traefik.http.routers.chatlocaldev-web.entrypoints=web # this is working with the port 80 entrypoint in the traefik config (a different docker-compose.yml)
+      # Let's redirect!
+      - traefik.http.routers.chatlocaldev-web-secure.rule=Host(`chat.local.dev`)
+      - traefik.http.routers.chatlocaldev-web-secure.tls=true
+      - traefik.http.routers.chatlocaldev-web-secure.entrypoints=web-secure
+      # What is essentially in this container's Dockerfile or image's Dockerfile under the `EXPOSE` setting
+      - traefik.http.services.chatlocaldev-web-secure.loadbalancer.server.port=8000 # this can be anything, but mirror the change back to the Dockerfile via EXPOSE
+    extra_hosts:
+      - host.docker.internal:host-gateway # used in deno task webhook
+    networks:
+      - default
+      - proxy
+    depends_on:
+      db:
+        condition: service_healthy
+  db:
+    image: mariadb:${DB_VERSION-latest}
+    networks:
+      - default       
+    environment:
+      MARIADB_USER: ${DB_USER}
+      MARIADB_ROOT_PASSWORD: ${DB_PASSWORD}
+      MARIADB_DATABASE: ${DB_NAME}
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  db_data:
+
+networks:
+  # Creating our own network allows us to connect between containers using their service name.
+  default:
+    driver: bridge
+  proxy:
+    external: true
+
