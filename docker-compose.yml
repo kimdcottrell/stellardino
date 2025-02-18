@@ -5,6 +5,8 @@ services:
       dockerfile: images/app.Dockerfile
       args:
         - LOCAL_MACHINE_GID=${LOCAL_MACHINE_GID}
+    tty: true
+    command: tail -f /dev/null
     env_file:
       - .env      
     volumes:

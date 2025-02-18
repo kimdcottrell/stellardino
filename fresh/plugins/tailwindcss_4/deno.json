@@ -1,0 +1,17 @@
+{
+  "name": "@stellardino/plugin-tailwind-4",
+  "version": "0.0.1-alpha.7",
+  "license": "MIT",
+  "exports": {
+    ".": "./src/mod.ts"
+  },
+  "imports": {
+    "$fresh": "https://deno.land/x/fresh@1.7.3/",
+    "@std/path": "jsr:@std/path@1",
+    "autoprefixer": "npm:autoprefixer@10",
+    "cssnano": "npm:cssnano@7",
+    "postcss": "npm:postcss@8",
+    "tailwindcss/postcss": "npm:@tailwindcss/postcss",
+    "tailwindcss": "npm:tailwindcss@4"
+  }
+}

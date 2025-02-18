@@ -23,15 +23,15 @@ WORKDIR /app
 
 # Cache the dependencies as a layer (the following two steps are re-run only when deps.ts is modified).
 # Ideally cache deno.json will download and compile _all_ external files used in main.ts.
-COPY /src/deno.jsonc .
+# COPY /src/deno.jsonc .
 
-RUN --mount=type=cache,target=${DENO_DIR},uid=${LOCAL_MACHINE_UID},gid=${LOCAL_MACHINE_GID} \
-    deno install
+# RUN --mount=type=cache,target=${DENO_DIR},uid=${LOCAL_MACHINE_UID},gid=${LOCAL_MACHINE_GID} \
+#     deno install
 
 # These steps will be re-run upon each file change in your working directory:
 COPY . .
 
-WORKDIR /app/src
+WORKDIR /app/vite
 
 # Compile the main app so that it doesn't need to be compiled each startup/entry.
 # RUN deno cache main.ts
@@ -43,7 +43,7 @@ EXPOSE 8000
 # ENV DENO_UNSTABLE_OTEL_DETERMINISTIC=1
 # ENV OTEL_EXPORTER_OTLP_PROTOCOL="http/json"
 # ENV OTEL_EXPORTER_OTLP_ENDPOINT="http://0.0.0.0:1991"
-CMD ["deno", "task", "start"]
+# CMD ["deno", "task", "start"]
 # CMD ["deno", "--reload", "--unstable-otel", "--watch", "--allow-read", "--port", "80", "--allow-env", "main.ts"]
 # CMD ["run", "--reload", "--unstable-otel", "--watch", "--allow-read", "--location", "http://0.0.0.0:1991", "--allow-net", "--allow-env", "main.ts"]
 
